@@ -1,5 +1,7 @@
 Java Etherpad Lite Client
 
+[![Coverage Status](https://coveralls.io/repos/github/sergiofernandez1/java-etherpad-lite/badge.svg?branch=master)](https://coveralls.io/github/sergiofernandez1/java-etherpad-lite?branch=master)
+
 [![Build Status](https://travis-ci.org/sergiofernandez1/java-etherpad-lite.svg?branch=master)](https://travis-ci.org/sergiofernandez1/java-etherpad-lite)
 
 =========================
