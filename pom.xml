@@ -119,6 +119,16 @@
           <mavenExecutorId>forked-path</mavenExecutorId>
         </configuration>
       </plugin>
+      
+      <plugin>
+        <groupId>org.eluder.coveralls</groupId>
+        <artifactId>coveralls-maven-plugin</artifactId>
+        <version>4.3.0</version>
+        <configuration>
+          <repoToken>B5qdHPqK28MpQlcGrHuQ8NkouA53MAJqM</repoToken>
+      </configuration>
+    </plugin>
+      
     </plugins>
   </build>
 
