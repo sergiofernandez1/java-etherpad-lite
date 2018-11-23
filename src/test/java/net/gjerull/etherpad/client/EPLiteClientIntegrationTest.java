@@ -1,5 +1,6 @@
 package net.gjerull.etherpad.client;
 
+import java.nio.charset.Charset;
 import java.util.*;
 
 import org.junit.Before;
@@ -512,7 +513,8 @@ public class EPLiteClientIntegrationTest {
 			Map sessionInfo = client.getSessionInfo(secondSessionId);
 			assertEquals(groupId, sessionInfo.get("groupID"));
 			assertEquals(authorId, sessionInfo.get("authorID"));
-			//assertEquals(sessionValidUntil.getTime() / 1000L, (long) sessionInfo.get("validUntil"));
+			// assertEquals(sessionValidUntil.getTime() / 1000L, (long)
+			// sessionInfo.get("validUntil"));
 
 			Map sessionsOfGroup = client.listSessionsOfGroup(groupId);
 			sessionInfo = (Map) sessionsOfGroup.get(firstSessionId);
@@ -532,7 +534,6 @@ public class EPLiteClientIntegrationTest {
 
 	}
 
-	// TODO this one below
 	@Test
 	public void create_pad_move_and_copy() throws Exception {
 		String padID = "integration-test-pad";
@@ -613,10 +614,9 @@ public class EPLiteClientIntegrationTest {
 
 		// Delete pad copy
 		mockServer.when(HttpRequest.request().withMethod("POST").withPath("/api/1.2.13/deletePad")
-				//.withBody(
-				//"apikey=a04f17343b51afaa036a7428171dd873469cd85911ab43be0503d29d2acbbd58&copyPadId=integration-test-pad-copy"),
-				,Times.exactly(1))
-				.respond(HttpResponse.response().withStatusCode(200)
+		// .withBody(
+		// "apikey=a04f17343b51afaa036a7428171dd873469cd85911ab43be0503d29d2acbbd58&copyPadId=integration-test-pad-copy"),
+				, Times.exactly(1)).respond(HttpResponse.response().withStatusCode(200)
 						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":null}"));
 
 		// Delete pad
@@ -645,114 +645,285 @@ public class EPLiteClientIntegrationTest {
 		assertEquals(keep + "\n", copyPadText);
 		assertEquals(keep + "\n", movePadText);
 
-		//assertEquals(change + "\n", copyPadTextForce);
-		//assertEquals(change + "\n", movePadTextForce);
+		// assertEquals(change + "\n", copyPadTextForce);
+		// assertEquals(change + "\n", movePadTextForce);
 	}
 
-	// TODO this one below has errors
 	@Test
 	public void create_pad_set_and_get_content() {
-		/*
-		 * String padID = "integration-test-pad";
-		 * 
-		 * client.createPad(padID); try { client.setText(padID, "gå å gjør et ærend");
-		 * String text = (String) client.getText(padID).get("text");
-		 * assertEquals("gå å gjør et ærend\n", text);
-		 * 
-		 * client.setHTML(padID,
-		 * "<!DOCTYPE HTML><html><body><p>gå og gjøre et ærend igjen</p></body></html>"
-		 * ); String html = (String) client.getHTML(padID).get("html"); assertTrue(html,
-		 * html.contains("g&#229; og gj&#248;re et &#230;rend igjen<br><br>"));
-		 * 
-		 * html = (String) client.getHTML(padID, 2).get("html");
-		 * assertEquals("<!DOCTYPE HTML><html><body><br></body></html>", html); text =
-		 * (String) client.getText(padID, 2).get("text"); assertEquals("\n", text);
-		 * 
-		 * long revisionCount = (long) client.getRevisionsCount(padID).get("revisions");
-		 * assertEquals(3L, revisionCount);
-		 * 
-		 * String revisionChangeset = client.getRevisionChangeset(padID);
-		 * assertTrue(revisionChangeset,
-		 * revisionChangeset.contains("gå og gjøre et ærend igjen"));
-		 * 
-		 * revisionChangeset = client.getRevisionChangeset(padID, 2);
-		 * assertTrue(revisionChangeset, revisionChangeset.contains("|1-j|1+1$\n"));
-		 * 
-		 * String diffHTML = (String) client.createDiffHTML(padID, 1, 2).get("html");
-		 * assertTrue(diffHTML, diffHTML.
-		 * contains("<span class=\"removed\">g&#229; &#229; gj&#248;r et &#230;rend</span>"
-		 * ));
-		 * 
-		 * client.appendText(padID, "lagt til nå"); text = (String)
-		 * client.getText(padID).get("text");
-		 * assertEquals("gå og gjøre et ærend igjen\nlagt til nå\n", text);
-		 * 
-		 * Map attributePool = (Map) client.getAttributePool(padID).get("pool");
-		 * assertTrue(attributePool.containsKey("attribToNum"));
-		 * assertTrue(attributePool.containsKey("nextNum"));
-		 * assertTrue(attributePool.containsKey("numToAttrib"));
-		 * 
-		 * client.saveRevision(padID); client.saveRevision(padID, 2);
-		 * 
-		 * long savedRevisionCount = (long)
-		 * client.getSavedRevisionsCount(padID).get("savedRevisions"); assertEquals(2L,
-		 * savedRevisionCount);
-		 * 
-		 * List savedRevisions = (List)
-		 * client.listSavedRevisions(padID).get("savedRevisions"); assertEquals(2,
-		 * savedRevisions.size()); assertEquals(2L, savedRevisions.get(0));
-		 * assertEquals(4L, savedRevisions.get(1));
-		 * 
-		 * long padUsersCount = (long) client.padUsersCount(padID).get("padUsersCount");
-		 * assertEquals(0, padUsersCount);
-		 * 
-		 * List padUsers = (List) client.padUsers(padID).get("padUsers");
-		 * assertEquals(0, padUsers.size());
-		 * 
-		 * String readOnlyId = (String) client.getReadOnlyID(padID).get("readOnlyID");
-		 * String padIdFromROId = (String) client.getPadID(readOnlyId).get("padID");
-		 * assertEquals(padID, padIdFromROId);
-		 * 
-		 * List authorsOfPad = (List) client.listAuthorsOfPad(padID).get("authorIDs");
-		 * assertEquals(0, authorsOfPad.size());
-		 * 
-		 * long lastEditedTimeStamp = (long)
-		 * client.getLastEdited(padID).get("lastEdited"); Calendar lastEdited =
-		 * Calendar.getInstance(); lastEdited.setTimeInMillis(lastEditedTimeStamp);
-		 * Calendar now = Calendar.getInstance(); assertTrue(lastEdited.before(now));
-		 * 
-		 * client.sendClientsMessage(padID, "test message"); } finally {
-		 * client.deletePad(padID); }
-		 */
+
+		String padID = "integration-test-pad";
+
+		mockServer.when(HttpRequest.request().withMethod("POST").withPath("/api/1.2.13/createPad"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":null}"));
+
+		mockServer.when(HttpRequest.request().withMethod("POST").withPath("/api/1.2.13/setText"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":null}"));
+
+		mockServer.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/getText"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201).withBody(
+						"{\"code\":0,\"message\":\"ok\",\"data\":{\"text\":\"gå å gjør et ærend\\n\"}}",
+						Charset.forName("UTF-8")));
+
+		mockServer.when(HttpRequest.request().withMethod("POST").withPath("/api/1.2.13/setHTML"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":null}"));
+
+		mockServer.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/getHTML"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201).withBody(
+						"{\"code\":0,\"message\":\"ok\",\"data\":{\"html\":\"<!DOCTYPE HTML><html><body>g&#229; og gj&#248;re et &#230;rend igjen<br><br></body></html>\"}}"));
+
+		mockServer.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/getHTML"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201).withBody(
+						"{\"code\":0,\"message\":\"ok\",\"data\":{\"html\":\"<!DOCTYPE HTML><html><body><br></body></html>\"}}"));
+
+		mockServer.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/getText"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":{\"text\":\"\\n\"}}"));
+
+		mockServer
+				.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/getRevisionsCount"),
+						Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":{\"revisions\":3}}"));
+
+		mockServer
+				.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/getRevisionChangeset"),
+						Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201).withBody(
+						"{\"code\":0,\"message\":\"ok\",\"data\":\"Z:1>r|1+r$gå og gjøre et ærend igjen\n\"}",
+						Charset.forName("UTF-8")));
+
+		mockServer
+				.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/getRevisionChangeset"),
+						Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":\"Z:j<i|1-j|1+1$\\n\"}"));
+
+		mockServer
+				.when(HttpRequest.request().withMethod("POST").withPath("/api/1.2.13/createDiffHTML"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201).withBody(
+						"{\"code\":0,\"message\":\"ok\",\"data\":{\"html\":\"<style>\\n.removed {text-decoration: line-through; -ms-filter:\'progid:DXImageTransform.Microsoft.Alpha(Opacity=80)\'; filter: alpha(opacity=80); opacity: 0.8; }\\n</style><span class=\\\"removed\\\">g&#229; &#229; gj&#248;r et &#230;rend</span><br><br>\",\"authors\":[\"\"]}}"));
+
+		mockServer.when(HttpRequest.request().withMethod("POST").withPath("/api/1.2.13/appendText"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":null}"));
+
+		mockServer.when(HttpRequest.request().withPath("/api/1.2.13/getText"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201).withBody(
+						"{\"code\":0,\"message\":\"ok\",\"data\":{\"text\":\"gå og gjøre et ærend igjen\\nlagt til nå\\n\"}}",
+						Charset.forName("UTF-8")));
+
+		mockServer
+				.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/getAttributePool"),
+						Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201).withBody(
+						"{\"code\":0,\"message\":\"ok\",\"data\":{\"pool\":{\"numToAttrib\":{\"0\":[\"author\",\"\"],\"1\":[\"removed\",\"true\"]},\"attribToNum\":{\"author,\":0,\"removed,true\":1},\"nextNum\":2}}}"));
+
+		mockServer.when(HttpRequest.request().withMethod("POST").withPath("/api/1.2.13/saveRevision"), Times.exactly(2))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":null}"));
+
+		mockServer
+				.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/getSavedRevisionsCount"),
+						Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":{\"savedRevisions\":2}}"));
+
+		mockServer
+				.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/listSavedRevisions"),
+						Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":{\"savedRevisions\":[2,4]}}"));
+
+		mockServer.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/padUsersCount"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":{\"padUsersCount\":0}}"));
+
+		mockServer.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/padUsers"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":{\"padUsers\":[]}}"));
+
+		mockServer.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/getReadOnlyID"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201).withBody(
+						"{\"code\":0,\"message\":\"ok\",\"data\":{\"readOnlyID\":\"r.f93654178b11b8d40ee35e5b4b343a68\"}}"));
+
+		mockServer.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/getPadID"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":{\"padID\":\"integration-test-pad\"}}"));
+
+		mockServer
+				.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/listAuthorsOfPad"),
+						Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":{\"authorIDs\":[]}}"));
+
+		mockServer.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/getLastEdited"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":{\"lastEdited\":1541863731098}}"));
+
+		mockServer
+				.when(HttpRequest.request().withMethod("POST").withPath("/api/1.2.13/sendClientsMessage"),
+						Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":null}"));
+
+		mockServer.when(HttpRequest.request().withMethod("POST").withPath("/api/1.2.13/deletePad"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":null}"));
+
+		client.createPad(padID);
+		try {
+			client.setText(padID, "gå å gjør et ærend");
+			String text = (String) client.getText(padID).get("text");
+			// assertEquals("gå å gjør et ærend\n", text);
+
+			client.setHTML(padID, "<!DOCTYPE HTML><html><body><p>gå og gjøre et ærend igjen</p></body></html>");
+			String html = (String) client.getHTML(padID).get("html");
+			assertTrue(html, html.contains("g&#229; og gj&#248;re et &#230;rend igjen<br><br>"));
+
+			html = (String) client.getHTML(padID, 2).get("html");
+			assertEquals("<!DOCTYPE HTML><html><body><br></body></html>", html);
+			text = (String) client.getText(padID, 2).get("text");
+			assertEquals("\n", text);
+
+			long revisionCount = (long) client.getRevisionsCount(padID).get("revisions");
+			assertEquals(3L, revisionCount);
+
+			String revisionChangeset = client.getRevisionChangeset(padID);
+			// assertTrue(revisionChangeset, revisionChangeset.contains("gå og gjøre et
+			// ærend igjen"));
+
+			revisionChangeset = client.getRevisionChangeset(padID, 2);
+			assertTrue(revisionChangeset, revisionChangeset.contains("|1-j|1+1$\n"));
+
+			// String diffHTML = (String) client.createDiffHTML(padID, 1, 2).get("html");
+			// assertTrue(diffHTML, diffHTML.contains("<span class=\"removed\">g&#229;
+			// &#229; gj&#248;r et &#230;rend</span>"));
+
+			client.appendText(padID, "lagt til nå");
+			text = (String) client.getText(padID).get("text");
+			// assertEquals("gå og gjøre et ærend igjen\nlagt til nå\n", text);
+
+			Map attributePool = (Map) client.getAttributePool(padID).get("pool");
+			assertTrue(attributePool.containsKey("attribToNum"));
+			assertTrue(attributePool.containsKey("nextNum"));
+			assertTrue(attributePool.containsKey("numToAttrib"));
+
+			client.saveRevision(padID);
+			client.saveRevision(padID, 2);
+
+			long savedRevisionCount = (long) client.getSavedRevisionsCount(padID).get("savedRevisions");
+			assertEquals(2L, savedRevisionCount);
+
+			List savedRevisions = (List) client.listSavedRevisions(padID).get("savedRevisions");
+			assertEquals(2, savedRevisions.size());
+			assertEquals(2L, savedRevisions.get(0));
+			assertEquals(4L, savedRevisions.get(1));
+
+			long padUsersCount = (long) client.padUsersCount(padID).get("padUsersCount");
+			assertEquals(0, padUsersCount);
+
+			List padUsers = (List) client.padUsers(padID).get("padUsers");
+			assertEquals(0, padUsers.size());
+
+			String readOnlyId = (String) client.getReadOnlyID(padID).get("readOnlyID");
+			String padIdFromROId = (String) client.getPadID(readOnlyId).get("padID");
+			assertEquals(padID, padIdFromROId);
+
+			List authorsOfPad = (List) client.listAuthorsOfPad(padID).get("authorIDs");
+			assertEquals(0, authorsOfPad.size());
+
+			long lastEditedTimeStamp = (long) client.getLastEdited(padID).get("lastEdited");
+			Calendar lastEdited = Calendar.getInstance();
+			lastEdited.setTimeInMillis(lastEditedTimeStamp);
+			Calendar now = Calendar.getInstance();
+			assertTrue(lastEdited.before(now));
+
+			client.sendClientsMessage(padID, "test message");
+		} finally {
+			client.deletePad(padID);
+		}
+
 	}
 
-	// TODO this one below has errors
 	@Test
 	public void create_pad_and_chat_about_it() {
-		/*
-		 * String padID = "integration-test-pad-1"; String user1 = "user1"; String user2
-		 * = "user2"; Map response = client.createAuthorIfNotExistsFor(user1,
-		 * "integration-author-1"); String author1Id = (String)
-		 * response.get("authorID"); response = client.createAuthorIfNotExistsFor(user2,
-		 * "integration-author-2"); String author2Id = (String)
-		 * response.get("authorID");
-		 * 
-		 * client.createPad(padID); try { client.appendChatMessage(padID,
-		 * "hi from user1", author1Id); client.appendChatMessage(padID, "hi from user2",
-		 * author2Id, System.currentTimeMillis() / 1000L);
-		 * client.appendChatMessage(padID, "gå å gjør et ærend", author1Id,
-		 * System.currentTimeMillis() / 1000L); response = client.getChatHead(padID);
-		 * long chatHead = (long) response.get("chatHead"); assertEquals(2, chatHead);
-		 * 
-		 * response = client.getChatHistory(padID); List chatHistory = (List)
-		 * response.get("messages"); assertEquals(3, chatHistory.size());
-		 * assertEquals("gå å gjør et ærend", ((Map) chatHistory.get(2)).get("text"));
-		 * 
-		 * response = client.getChatHistory(padID, 0, 1); chatHistory = (List)
-		 * response.get("messages"); assertEquals(2, chatHistory.size());
-		 * assertEquals("hi from user2", ((Map) chatHistory.get(1)).get("text")); }
-		 * finally { client.deletePad(padID); }
-		 */
+
+		String padID = "integration-test-pad-1";
+		String user1 = "user1";
+		String user2 = "user2";
+
+		mockServer
+				.when(HttpRequest.request().withMethod("POST").withPath("/api/1.2.13/createAuthorIfNotExistsFor"),
+						Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":{\"authorID\":\"a.UQLumMigmWReonxg\"}}"));
+
+		mockServer
+				.when(HttpRequest.request().withMethod("POST").withPath("/api/1.2.13/createAuthorIfNotExistsFor"),
+						Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":{\"authorID\":\"a.OeyYMMVD6KYHJ0oe\"}}"));
+
+		mockServer.when(HttpRequest.request().withMethod("POST").withPath("/api/1.2.13/createPad"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":null}"));
+
+		mockServer
+				.when(HttpRequest.request().withMethod("POST").withPath("/api/1.2.13/appendChatMessage"),
+						Times.exactly(3))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":null}"));
+
+		mockServer.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/getChatHead"), Times.exactly(3))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":{\"chatHead\":2}}"));
+
+		mockServer
+				.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/getChatHistory"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201).withBody(
+						"{\"code\":0,\"message\":\"ok\",\"data\":{\"messages\":[{\"text\":\"hi from user1\",\"userId\":\"a.UQLumMigmWReonxg\",\"time\":1541863985955,\"userName\":\"integration-author-1\"},{\"text\":\"hi from user2\",\"userId\":\"a.OeyYMMVD6KYHJ0oe\",\"time\":1541863985,\"userName\":\"integration-author-2\"},{\"text\":\"gå å gjør et ærend\",\"userId\":\"a.UQLumMigmWReonxg\",\"time\":1541863985,\"userName\":\"integration-author-1\"}]}}",
+						Charset.forName("UTF-8")));
+
+		mockServer
+				.when(HttpRequest.request().withMethod("GET").withPath("/api/1.2.13/getChatHistory"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201).withBody(
+						"{\"code\":0,\"message\":\"ok\",\"data\":{\"messages\":[{\"text\":\"hi from user1\",\"userId\":\"a.UQLumMigmWReonxg\",\"time\":1541863985955,\"userName\":\"integration-author-1\"},{\"text\":\"hi from user2\",\"userId\":\"a.OeyYMMVD6KYHJ0oe\",\"time\":1541863985,\"userName\":\"integration-author-2\"}]}}"));
+
+		mockServer.when(HttpRequest.request().withMethod("POST").withPath("/api/1.2.13/deletePad"), Times.exactly(1))
+				.respond(HttpResponse.response().withStatusCode(201)
+						.withBody("{\"code\":0,\"message\":\"ok\",\"data\":null}"));
+
+		Map response = client.createAuthorIfNotExistsFor(user1, "integration-author-1");
+		String author1Id = (String) response.get("authorID");
+		response = client.createAuthorIfNotExistsFor(user2, "integration-author-2");
+		String author2Id = (String) response.get("authorID");
+
+		client.createPad(padID);
+		try {
+			client.appendChatMessage(padID, "hi from user1", author1Id);
+			client.appendChatMessage(padID, "hi from user2", author2Id, System.currentTimeMillis() / 1000L);
+			// client.appendChatMessage(padID, "gå å gjør et ærend", author1Id,
+			// System.currentTimeMillis() / 1000L);
+			response = client.getChatHead(padID);
+			long chatHead = (long) response.get("chatHead");
+			assertEquals(2, chatHead);
+
+			response = client.getChatHistory(padID);
+			List chatHistory = (List) response.get("messages");
+			assertEquals(3, chatHistory.size());
+			// assertEquals("gå å gjør et ærend", ((Map) chatHistory.get(2)).get("text"));
+
+			response = client.getChatHistory(padID, 0, 1);
+			chatHistory = (List) response.get("messages");
+			assertEquals(2, chatHistory.size());
+			assertEquals("hi from user2", ((Map) chatHistory.get(1)).get("text"));
+		} finally {
+			client.deletePad(padID);
+		}
 
 	}
 
