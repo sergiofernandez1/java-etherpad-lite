@@ -16,13 +16,16 @@ import org.mockserver.integration.ClientAndServer;
 import org.mockserver.matchers.Times;
 
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
-import static org.mockserver.integration.ClientAndServer.startClientAndServer;
-
+import etm.core.monitor.EtmMonitor;
+import etm.core.configuration.EtmManager;
+import etm.core.configuration.BasicEtmConfigurator;
+import etm.core.renderer.SimpleTextRenderer;
 /**
  * Integration test for simple App.
  */
 public class EPLiteClientIntegrationTest {
 	private EPLiteClient client;
+	private EtmMonitor monitor;
 	private ClientAndServer mockServer;
 
 	/**
@@ -35,11 +38,20 @@ public class EPLiteClientIntegrationTest {
 		this.client = new EPLiteClient("http://localhost:9001",
 				"a04f17343b51afaa036a7428171dd873469cd85911ab43be0503d29d2acbbd58");
 		mockServer = startClientAndServer(9001);
+		
+		// initialize measurement subsystem
+		BasicEtmConfigurator.configure();
+		// startup measurement subsystem
+		monitor = EtmManager.getEtmMonitor();
+        monitor.start();
 	}
 
 	@After
 	public void stopServer() {
 		mockServer.stop();
+		// visualize results
+		monitor.render(new SimpleTextRenderer());
+		monitor.stop();
 	}
 
 	@Test
