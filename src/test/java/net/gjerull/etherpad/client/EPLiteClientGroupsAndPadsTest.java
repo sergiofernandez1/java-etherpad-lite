@@ -46,7 +46,7 @@ public class EPLiteClientGroupsAndPadsTest extends ExecutionContext implements I
 	@Override
 	public void listAllGroups() {
 		// TODO Auto-generated method stub
-
+		System.out.println("Listando todos los grupos");
 	}
 
 	@Override
@@ -71,7 +71,7 @@ public class EPLiteClientGroupsAndPadsTest extends ExecutionContext implements I
 
 	@Override
 	public void setUp() {
-		System.out.println("setting up");
+		System.out.println("Setting up");
 	}
 
 	@Override
